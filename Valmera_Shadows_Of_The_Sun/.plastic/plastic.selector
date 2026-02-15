@@ -1,0 +1,4 @@
+repository "Valmera_Shadows_Of_The_Sun/Valmera_Shadows_Of_The_Sun@108789@cloud"
+  path "/"
+    br "/main"
+    co "/main"
