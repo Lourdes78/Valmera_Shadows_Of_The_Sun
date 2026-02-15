@@ -3,41 +3,74 @@ using System.Collections.Generic;
 
 public class EventBus
 {
-    private Dictionary<Type, Delegate> eventTable = new();
+    private readonly Dictionary<Type, Delegate> eventTable = new();
+    private bool debugMode = false;
+
+    public void EnableDebug(bool enabled)
+    {
+        debugMode = enabled;
+    }
 
     public void Subscribe<T>(Action<T> listener)
     {
         var type = typeof(T);
 
-        if (eventTable.ContainsKey(type))
-            eventTable[type] = Delegate.Combine(eventTable[type], listener);
+        if (listener == null)
+            return;
+
+        if (eventTable.TryGetValue(type, out var existingDelegate))
+        {
+            foreach (var d in existingDelegate.GetInvocationList())
+            {
+                if (d.Equals(listener))
+                    return; // evita duplicats
+            }
+
+            eventTable[type] = Delegate.Combine(existingDelegate, listener);
+        }
         else
+        {
             eventTable[type] = listener;
+        }
+
+        if (debugMode)
+            UnityEngine.Debug.Log($"[EventBus] Subscribed to {type.Name}");
     }
 
     public void Unsubscribe<T>(Action<T> listener)
     {
         var type = typeof(T);
 
-        if (!eventTable.ContainsKey(type))
+        if (!eventTable.TryGetValue(type, out var existingDelegate))
             return;
 
-        var currentDel = Delegate.Remove(eventTable[type], listener);
+        var newDelegate = Delegate.Remove(existingDelegate, listener);
 
-        if (currentDel == null)
+        if (newDelegate == null)
             eventTable.Remove(type);
         else
-            eventTable[type] = currentDel;
+            eventTable[type] = newDelegate;
+
+        if (debugMode)
+            UnityEngine.Debug.Log($"[EventBus] Unsubscribed from {type.Name}");
     }
 
     public void Publish<T>(T eventData)
     {
         var type = typeof(T);
 
-        if (!eventTable.ContainsKey(type))
+        if (!eventTable.TryGetValue(type, out var del))
             return;
 
-        var callback = eventTable[type] as Action<T>;
+        if (debugMode)
+            UnityEngine.Debug.Log($"[EventBus] Publishing {type.Name}");
+
+        var callback = del as Action<T>;
         callback?.Invoke(eventData);
+    }
+
+    public void Clear()
+    {
+        eventTable.Clear();
     }
 }
