@@ -43,4 +43,25 @@ public class PlayerStats
         MaxStamina += amount;
         CurrentStamina = MaxStamina;
     }
+
+    public void SetHealth(int value)
+    {
+        CurrentHealth = value;
+    }
+
+    public void SetMaxHealth(int value)
+    {
+        MaxHealth = value;
+    }
+
+    public void SetStamina(int value)
+    {
+        CurrentStamina = value;
+    }
+
+    public void SetMaxStamina(int value)
+    {
+        MaxStamina = value;
+    }
+
 }

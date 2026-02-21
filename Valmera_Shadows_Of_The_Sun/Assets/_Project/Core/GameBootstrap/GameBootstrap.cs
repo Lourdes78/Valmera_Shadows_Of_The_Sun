@@ -3,10 +3,14 @@ using UnityEngine.SceneManagement;
 
 public class GameBootstrap : MonoBehaviour
 {
+    [SerializeField] private ItemDefinition healthPotion, wood, stone;
+    [SerializeField] private RecipeDefinition recipeHealthPotion;
+    private SaveSystem saveSystem;
+
     private void Awake()
     {
         DontDestroyOnLoad(gameObject);
-
+        Debug.Log("WorldBrain Awake");
         InitializeCore();
         LoadMainWorld();
     }
@@ -19,8 +23,11 @@ public class GameBootstrap : MonoBehaviour
         eventBus.EnableDebug(true);
         ServiceLocator.Register(eventBus);
 
-        var playerState = new PlayerState(eventBus);
+        var playerState = new PlayerState(eventBus, this);
         ServiceLocator.Register(playerState);
+
+        saveSystem = new SaveSystem();          
+        ServiceLocator.Register(saveSystem);    
 
         Debug.Log("Core Initialized");
     }
@@ -34,9 +41,19 @@ public class GameBootstrap : MonoBehaviour
     {
         var player = ServiceLocator.Get<PlayerState>();
 
+        saveSystem = ServiceLocator.Get<SaveSystem>();
+
+        var data = saveSystem.Load();
+        player.ApplyLoadedData(data);
+
         player.Stats.ModifyHealth(-20);
         player.ReputationSystem.ModifyReputation(FactionType.Villagers, 10);
-        Debug.Log("Current HP: " + player.Stats.CurrentHealth);
+
+        player.InventorySystem.AddItem(healthPotion, 5);
+        player.InventorySystem.AddItem(wood, 5);
+        player.InventorySystem.AddItem(stone, 3);
+
+        player.CraftingSystem.Craft(recipeHealthPotion, 1, CraftingStationType.Player);
 
         player.XPSystem.AddXP(200);
     }

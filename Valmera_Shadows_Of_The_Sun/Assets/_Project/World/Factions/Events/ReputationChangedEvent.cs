@@ -1,3 +1,4 @@
+
 public class ReputationChangedEvent
 {
     public FactionType Faction;

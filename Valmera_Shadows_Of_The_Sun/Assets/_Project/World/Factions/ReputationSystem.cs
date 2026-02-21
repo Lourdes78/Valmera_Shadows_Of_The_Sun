@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 public class ReputationSystem
 {
@@ -32,4 +33,20 @@ public class ReputationSystem
             NewValue = reputation[faction]
         });
     }
+    public Dictionary<FactionType, int> GetAll()
+    {
+        return new Dictionary<FactionType, int>(reputation);
+    }
+   
+    public void SetReputation(FactionType faction, int value)
+    {
+        reputation[faction] = value;
+    }
+
+    public void ClearAll()
+    {
+        foreach (var key in reputation.Keys.ToList())
+            reputation[key] = 0;
+    }
+
 }

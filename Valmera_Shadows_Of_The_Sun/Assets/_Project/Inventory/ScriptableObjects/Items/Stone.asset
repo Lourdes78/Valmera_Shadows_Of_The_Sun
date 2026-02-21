@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 013079172312e664983a1859e08395b0, type: 3}
+  m_Name: Stone
+  m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
+  Id: Stone
+  DisplayName: Stone
+  Description: this is a stone
+  Icon: {fileID: 0}
+  Category: 5
+  Stackable: 1
+  MaxStack: 20
+  IsConsumable: 0
+  Boosts:
+    Health: 0
+    Stamina: 0
+    Poison: 0
+    Influence: 0
