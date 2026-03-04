@@ -12,6 +12,8 @@ public class ZoneRuntimeState
 
     public AlertState CurrentState { get; private set; }
 
+    public float EconomicStability { get; private set; } = 0.5f;
+
     public ZoneRuntimeState(ZoneData definition, EventBus eventBus)
     {
         Definition = definition;
@@ -21,16 +23,19 @@ public class ZoneRuntimeState
 
         EvaluateState(); // inicialitzem estat
     }
+
     private void EvaluateState()
     {
         AlertState previous = CurrentState;
 
-        if (CurrentAlertLevel < 0.3f)
+        if (CurrentAlertLevel < 0.25f)
             CurrentState = AlertState.Calm;
-        else if (CurrentAlertLevel < 0.6f)
+        else if (CurrentAlertLevel < 0.5f)
             CurrentState = AlertState.Suspicious;
-        else if (CurrentAlertLevel < 0.85f)
+        else if (CurrentAlertLevel < 0.7f)
             CurrentState = AlertState.Unrest;
+        else if (CurrentAlertLevel < 0.9f)
+            CurrentState = AlertState.Hostile;
         else
             CurrentState = AlertState.Lockdown;
 
@@ -52,5 +57,10 @@ public class ZoneRuntimeState
     {
         CurrentAlertLevel = Mathf.Clamp01(value);
         EvaluateState();
+    }
+
+    public void ModifyEconomy(float amount)
+    {
+        EconomicStability = Mathf.Clamp01(EconomicStability + amount);
     }
 }

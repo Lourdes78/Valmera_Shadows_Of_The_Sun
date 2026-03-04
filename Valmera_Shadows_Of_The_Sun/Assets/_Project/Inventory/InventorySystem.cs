@@ -61,6 +61,21 @@ public class InventorySystem
 
         return true;
     }
+    public bool ConsumeItem(ItemDefinition definition)
+    {
+        if (!definition.IsConsumable)
+            return false;
+
+        if (!RemoveItem(definition, 1))
+            return false;
+
+        eventBus.Publish(new ItemConsumedEvent
+        {
+            Item = definition
+        });
+
+        return true;
+    }
 
     private InventorySlot GetEmptySlot()
     {
@@ -77,5 +92,41 @@ public class InventorySystem
         {
             SlotIndex = index
         });
+    }
+    public bool RemoveItem(ItemDefinition definition, int amount)
+    {
+        int totalAvailable = 0;
+
+        foreach (var slot in slots)
+        {
+            if (!slot.IsEmpty && slot.Item.Definition == definition)
+                totalAvailable += slot.Item.Quantity;
+        }
+
+        if (totalAvailable < amount)
+            return false;
+
+        foreach (var slot in slots)
+        {
+            if (slot.IsEmpty)
+                continue;
+
+            if (slot.Item.Definition == definition)
+            {
+                int remove = System.Math.Min(slot.Item.Quantity, amount);
+                slot.Item.Remove(remove);
+                amount -= remove;
+
+                if (slot.Item.Quantity <= 0)
+                    slot.Clear();
+
+                PublishSlotChange(slots.IndexOf(slot));
+
+                if (amount <= 0)
+                    break;
+            }
+        }
+
+        return true;
     }
 }

@@ -60,8 +60,8 @@ public class PlayerState
 
         for (int i = 0; i < playerData.Reputation.Factions.Length; i++)
         {
-            var faction = (FactionType)System.Enum.Parse(
-                typeof(FactionType),
+            var faction = (NPCFaction)System.Enum.Parse(
+                typeof(NPCFaction),
                 playerData.Reputation.Factions[i]);
 
             ReputationSystem.SetReputation(

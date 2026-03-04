@@ -27,4 +27,8 @@ public class WorldStateManager
         zones.TryGetValue(id, out var zone);
         return zone;
     }
+    public void Tick()
+    {
+        // Placeholder per futurs sistemes
+    }
 }

@@ -1,89 +1,96 @@
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class WorldBrain : MonoBehaviour
 {
+    [Header("Zone Definitions")]
     [SerializeField] private List<ZoneData> zoneDefinitions;
 
-    private EventBus eventBus;
+    [Header("NPC Definitions")]
+    [SerializeField] private NPCDefinition guardDefinition;
+    [SerializeField] private NPCDefinition civilDefinition;
 
+    [Header("Inventory Settings")]
+    [SerializeField] private int inventorySlots = 20;
+
+    private EventBus eventBus;
     private WorldStateManager worldState;
-    private AlertSystem alertSystem;
-    private PoliticalTensionSystem politicalSystem;
-    private EconomyManager economyManager;
-    private WorldEventLogger logger;
+    private NPCSystem npcSystem;
+    private ReputationSystem reputationSystem;
+    private InventorySystem inventory;
+    private CraftingSystem crafting;
+    private XPSystem xpSystem;
+    private CurrencySystem currencySystem;
 
     private float tickTimer;
     private const float tickInterval = 10f;
 
+    public InventorySystem Inventory => inventory;
+    public CraftingSystem Crafting => crafting;
+    public XPSystem XPSystem => xpSystem;
+    public CurrencySystem CurrencySystem => currencySystem;
+    public EventBus EventBus => eventBus;
+
     private void Awake()
     {
-        Debug.Log("WorldBrain Awake");
-
-        eventBus = ServiceLocator.Get<EventBus>();
-
         InitializeSystems();
-        Debug.Log(worldState == null
-    ? "WorldState is NULL before register"
-    : "WorldState created correctly");
-
-        ServiceLocator.Register(worldState);
-
-        SubscribeToEvents();
-    }
-
-    private void InitializeSystems()
-    {
-        worldState = new WorldStateManager();
-        worldState.Initialize(zoneDefinitions, eventBus);
-
-        alertSystem = new AlertSystem(worldState);
-        politicalSystem = new PoliticalTensionSystem(worldState);
-        economyManager = new EconomyManager();
-        logger = new WorldEventLogger();
-
-        logger.Log("World initialized");
-    }
-
-    private void SubscribeToEvents()
-    {
-        eventBus.Subscribe<PlayerLevelUpEvent>(OnPlayerLevelUp);
-        eventBus.Subscribe<ReputationChangedEvent>(OnReputationChanged);
-        eventBus.Subscribe<ZoneAlertStateChangedEvent>(OnZoneAlertStateChanged);
-    }
-
-    private void OnZoneAlertStateChanged(ZoneAlertStateChangedEvent e)
-    {
-        logger.Log($"Zone {e.ZoneId} changed alert state to {e.NewState}");
-    }
-
-    private void OnPlayerLevelUp(PlayerLevelUpEvent e)
-    {
-        alertSystem.ReduceAlertOnLevelUp();
-        logger.Log($"Player level up: {e.NewLevel}");
-    }
-
-    private void OnReputationChanged(ReputationChangedEvent e)
-    {
-        politicalSystem.HandleReputationChange(e.Faction, e.NewValue);
+        SpawnInitialNPCs();
     }
 
     private void Update()
     {
         tickTimer += Time.deltaTime;
-
         if (tickTimer >= tickInterval)
         {
             tickTimer = 0f;
-            WorldTick();
+            worldState.Tick();
         }
     }
 
-    private void WorldTick()
+    private void InitializeSystems()
     {
-        alertSystem.GlobalDecay(0.01f);
-        economyManager.WorldTick();
+        eventBus = new EventBus();
 
-        logger.Log("World Tick executed");
+        worldState = new WorldStateManager();
+        worldState.Initialize(zoneDefinitions, eventBus);
+
+        xpSystem = new XPSystem(1, eventBus);
+        reputationSystem = new ReputationSystem(eventBus);
+        currencySystem = new CurrencySystem(eventBus);
+
+        // FIX 1: passem maxSlots
+        inventory = new InventorySystem(inventorySlots, eventBus);
+
+        // FIX 2: passem el runner (aquest MonoBehaviour)
+        crafting = new CraftingSystem(inventory, eventBus, this);
+
+        npcSystem = new NPCSystem(worldState, eventBus);
+
+        eventBus.Subscribe<NPCKilledEvent>(OnNPCKilled);
+        eventBus.Subscribe<NPCCuredEvent>(OnNPCCured);
+    }
+
+    private void SpawnInitialNPCs()
+    {
+        if (zoneDefinitions == null || zoneDefinitions.Count == 0)
+            return;
+
+        string firstZone = zoneDefinitions[0].ZoneId;
+
+        if (guardDefinition != null)
+            npcSystem.SpawnNPC(guardDefinition, firstZone);
+
+        if (civilDefinition != null)
+            npcSystem.SpawnNPC(civilDefinition, firstZone);
+    }
+
+    private void OnNPCKilled(NPCKilledEvent e)
+    {
+        reputationSystem.ModifyReputation(e.Faction, -1);
+    }
+
+    private void OnNPCCured(NPCCuredEvent e)
+    {
+        reputationSystem.ModifyReputation(e.Faction, 1);
     }
 }

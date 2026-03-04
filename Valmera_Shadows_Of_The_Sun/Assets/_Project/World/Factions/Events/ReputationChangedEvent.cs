@@ -1,6 +1,6 @@
 
 public class ReputationChangedEvent
 {
-    public FactionType Faction;
+    public NPCFaction Faction;
     public int NewValue;
 }

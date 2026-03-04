@@ -47,7 +47,7 @@ public class GameBootstrap : MonoBehaviour
         player.ApplyLoadedData(data);
 
         player.Stats.ModifyHealth(-20);
-        player.ReputationSystem.ModifyReputation(FactionType.Villagers, 10);
+        player.ReputationSystem.ModifyReputation(NPCFaction.Civil, -100);
 
         player.InventorySystem.AddItem(healthPotion, 5);
         player.InventorySystem.AddItem(wood, 5);

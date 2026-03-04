@@ -3,8 +3,8 @@ using System.Linq;
 
 public class ReputationSystem
 {
-    private readonly Dictionary<FactionType, int> reputation =
-        new Dictionary<FactionType, int>();
+    private readonly Dictionary<NPCFaction, int> reputation =
+        new Dictionary<NPCFaction, int>();
 
     private readonly EventBus eventBus;
 
@@ -12,18 +12,18 @@ public class ReputationSystem
     {
         eventBus = bus;
 
-        foreach (FactionType faction in System.Enum.GetValues(typeof(FactionType)))
+        foreach (NPCFaction faction in System.Enum.GetValues(typeof(NPCFaction)))
         {
             reputation[faction] = 0;
         }
     }
 
-    public int GetReputation(FactionType faction)
+    public int GetReputation(NPCFaction faction)
     {
         return reputation[faction];
     }
 
-    public void ModifyReputation(FactionType faction, int amount)
+    public void ModifyReputation(NPCFaction faction, int amount)
     {
         reputation[faction] += amount;
 
@@ -33,12 +33,12 @@ public class ReputationSystem
             NewValue = reputation[faction]
         });
     }
-    public Dictionary<FactionType, int> GetAll()
+    public Dictionary<NPCFaction, int> GetAll()
     {
-        return new Dictionary<FactionType, int>(reputation);
+        return new Dictionary<NPCFaction, int>(reputation);
     }
    
-    public void SetReputation(FactionType faction, int value)
+    public void SetReputation(NPCFaction faction, int value)
     {
         reputation[faction] = value;
     }
